@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
-import com.king.httpservertest.logUtils.webLog;
+import com.king.httpservertest.logUtils.SocketUtils.SocketServer;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +25,18 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.start_server).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                webLog.Start();
+                ListenerRequest lis = new ListenerRequest();
+
+                SocketServer server = null;
+                try {
+                    server = new SocketServer(lis);
+                    server.Start(50131);
+                    LogUtils.logi("Start Server Success");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    LogUtils.logi("Start Server Failure");
+                }
+
             }
         });
 
