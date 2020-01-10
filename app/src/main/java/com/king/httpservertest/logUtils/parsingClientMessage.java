@@ -2,6 +2,7 @@ package com.king.httpservertest.logUtils;
 
 import com.king.httpservertest.LogUtils;
 import com.king.httpservertest.logUtils.Http.Request;
+import com.king.httpservertest.logUtils.Http.Response;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -90,19 +91,16 @@ public class parsingClientMessage implements Runnable {
 
     /**
      * return message get
-     * @param Message
+     * @param req
      * @return
      */
-    private boolean SendMessage(byte[] Message) {
+    private boolean SendMessage(Response req) {
         try {
-            byte[] Header = "HTTP/1.1 200 OK\nServer: king/2.0.14\n\n".getBytes();
-            ByteArrayOutputStream Localout = new ByteArrayOutputStream();
-            Localout.write(Header,0,Header.length);
-            Localout.write(Message,0,Message.length);
-            OutputStream out = client.getOutputStream();
-            out.write(Localout.toByteArray(),0,Localout.size());
-            out.flush();
-            out.close();
+            ByteArrayOutputStream outputStream =  req.Build();
+            OutputStream ClientOutputStream = client.getOutputStream();
+            ClientOutputStream.write(outputStream.toByteArray());
+            ClientOutputStream.flush();
+            ClientOutputStream.close();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,22 +112,21 @@ public class parsingClientMessage implements Runnable {
     }
 
 
-
-
-
     @Override
     public void run() {
         String Address = getClientAddress();
         LogUtils.logi("Recevied Client Address : " + Address);
         ByteArrayOutputStream Mess = getReciveData();
+        Response response = new Response();
         if (Mess == null)
         {
-            SendMessage("Null".getBytes());
+            response.setReturnContent("Hellow Word".getBytes());
+            SendMessage(response);
             return;
         }
         Request req = Request.Parsing(Mess);
-        SendMessage(req.toString().getBytes());
-        LogUtils.logi(req.toString());
+        response.setReturnContent(req.toString().getBytes());
+        SendMessage(response);
 
     }
 

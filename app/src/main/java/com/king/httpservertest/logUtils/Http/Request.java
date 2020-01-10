@@ -51,10 +51,7 @@ public class Request {
         {
             //GET
             //header data
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int Length = ++index;
-            out.write(buf,0,Length);
-            String HeaderStr = out.toString();
+            String HeaderStr = outputStream.toString();
             baseParsing(HeaderStr,req);
         }
 
