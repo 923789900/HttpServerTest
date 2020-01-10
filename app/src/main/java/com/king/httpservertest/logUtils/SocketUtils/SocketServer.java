@@ -126,13 +126,12 @@ public class SocketServer {
                 listener.event_Recevied(Client,data.toByteArray(),data.size());
 
             }
-        });
+        }).start();
 
 
 
 
     }
-
 
     /**
      * Forward Data
