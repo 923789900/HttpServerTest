@@ -27,21 +27,35 @@ public class Request {
         Request req = new Request();
         int Size = outputStream.size();
         byte[] buf = outputStream.toByteArray();
-        int index = getIndex(buf, "\n\n".getBytes());
-        //header data
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int Length = ++index;
-        out.write(buf,0,Length);
-        String HeaderStr = out.toString();
-        baseParsing(HeaderStr,req);
-
-        //date
-        if(outputStream.size() > Length)
+        int index = getIndex(buf, "\r\n\r\n".getBytes());
+        if (index != -1)
         {
-            out.reset();
-            Length = Length+2;
-            out.write(buf,Length,buf.length-Length);
-            req.Content =out.toByteArray();
+            //POST
+            //header data
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            int Length = ++index;
+            out.write(buf,0,Length);
+            String HeaderStr = out.toString();
+            baseParsing(HeaderStr,req);
+
+            //date
+            if(Size > Length)
+            {
+                out.reset();
+                Length = Length+2;
+                out.write(buf,Length,buf.length-Length);
+                req.Content =out.toByteArray();
+            }
+
+        }else
+        {
+            //GET
+            //header data
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            int Length = ++index;
+            out.write(buf,0,Length);
+            String HeaderStr = out.toString();
+            baseParsing(HeaderStr,req);
         }
 
         return req;
@@ -60,13 +74,13 @@ public class Request {
         {
             if (i == 0)
             {
-                parsingMethodAndProtocol(heads[0],req);
+                parsingMethodAndProtocol(heads[0].replace("\r",""),req);
             }else
             {
                 String[] singleHead = heads[i].split(":",2);
                 if (singleHead.length == 2 )
                 {
-                    req.Headers.put(singleHead[0],singleHead[1]);
+                    req.Headers.put(singleHead[0],singleHead[1].replace("\r",""));
                 }
 
             }
@@ -127,8 +141,9 @@ public class Request {
      * @return
      */
     public static int getIndex(byte[] mBaseData, byte[] src) {
-        int i = 0;
-        while (i < mBaseData.length) {
+        int i;
+        for (i = 0;i<mBaseData.length;i++)
+        {
             if (mBaseData[i] == src[0]) {
                 int index = i;
                 for (byte by : src) {
@@ -144,6 +159,7 @@ public class Request {
             } else {
                 i++;
             }
+
         }
         return -1;
     }
