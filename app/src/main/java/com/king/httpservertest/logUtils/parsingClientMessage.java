@@ -26,90 +26,8 @@ public class parsingClientMessage implements Runnable {
         return Message;
     }
 
-    /**
-     * read input stream to byte array Stream
-     *
-     * @param input
-     * @return
-     */
-    private static ByteArrayOutputStream readInputStream(InputStream input) {
-        byte[] buf = new byte[1024];
-        int len = 0;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        do {
-
-            try {
-                len = input.read(buf, 0, 1024);
-                if (len < 1024) {
-                    out.write(buf, 0, len);
-                    break;
-                } else if (len == 1024) {
-                    out.write(buf, 0, len);
-                } else {
-                    break;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                LogUtils.loge("parsingClientMessage->readInputStream|Exception|ErrorMessage :  " + e.getMessage());
-            }
-
-        } while (true);
-
-        return out;
-
-    }
-
-    /**
-     * get received byte buffer
-     *
-     * @return
-     */
-    private ByteArrayOutputStream getReciveData() {
-        ByteArrayOutputStream Result = null;
-        try {
-            //获取用户的输入对象
-            InputStream input = client.getInputStream();
-            //读取用户传来的数据
-            Result = readInputStream(input);
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtils.loge("getReciveData Exception Error Message : " + e.getMessage());
-            Result = null;
-        }
-
-        return Result;
-    }
-
-    /**
-     * get Client Address
-     *
-     * @return
-     */
-    private String getClientAddress() {
-        return client.getInetAddress().getHostAddress();
-    }
-
-    /**
-     * return message get
-     * @param req
-     * @return
-     */
-    private boolean SendMessage(Response req) {
-        try {
-            ByteArrayOutputStream outputStream =  req.Build();
-            OutputStream ClientOutputStream = client.getOutputStream();
-            ClientOutputStream.write(outputStream.toByteArray());
-            ClientOutputStream.flush();
-            ClientOutputStream.close();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtils.loge("parsingClientMessage->SendMessage|Exception|Error Message : " + e.getMessage());
-            return false;
-        }
 
 
-    }
 
 
     @Override
@@ -124,7 +42,7 @@ public class parsingClientMessage implements Runnable {
             SendMessage(response);
             return;
         }
-        Request req = Request.Parsing(Mess);
+        Request req = Request.Parsing(Mess,Socket Client);
         response.setReturnContent(req.toString().getBytes());
         SendMessage(response);
 

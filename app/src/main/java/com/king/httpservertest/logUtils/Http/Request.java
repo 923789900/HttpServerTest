@@ -1,6 +1,7 @@
 package com.king.httpservertest.logUtils.Http;
 
 import java.io.ByteArrayOutputStream;
+import java.net.Socket;
 import java.util.HashMap;
 
 public class Request {
@@ -22,7 +23,7 @@ public class Request {
      * @param outputStream
      * @return
      */
-    public static Request Parsing(ByteArrayOutputStream outputStream) {
+    public static Request Parsing(ByteArrayOutputStream outputStream, Socket Client) {
 
         Request req = new Request();
         int Size = outputStream.size();
@@ -38,11 +39,11 @@ public class Request {
             String HeaderStr = out.toString();
             baseParsing(HeaderStr,req);
 
-            //date
+            //data
             if(Size > Length)
             {
                 out.reset();
-                Length = Length+2;
+                Length += "\r\n".length();
                 out.write(buf,Length,buf.length-Length);
                 req.Content =out.toByteArray();
             }
@@ -52,7 +53,11 @@ public class Request {
             //GET
             //header data
             String HeaderStr = outputStream.toString();
-            baseParsing(HeaderStr,req);
+            boolean state = baseParsing(HeaderStr,req);
+            if (!state)
+            {
+
+            }
         }
 
         return req;
@@ -63,21 +68,25 @@ public class Request {
      * @param HeaderStr
      * @param req
      */
-    private static void baseParsing(String HeaderStr, Request req)
+    private static boolean baseParsing(String HeaderStr, Request req)
     {
-        String[] heads =  HeaderStr.split("\n");
+        String[] heads =  HeaderStr.split("\r\n");
 
         for (int i=0;i<heads.length;i++)
         {
             if (i == 0)
             {
-                parsingMethodAndProtocol(heads[0].replace("\r",""),req);
+               boolean State = parsingMethodAndProtocol(heads[0],req);
+               if (!State)
+               {
+                   return false;
+               }
             }else
             {
                 String[] singleHead = heads[i].split(":",2);
                 if (singleHead.length == 2 )
                 {
-                    req.Headers.put(singleHead[0],singleHead[1].replace("\r",""));
+                    req.Headers.put(singleHead[0],singleHead[1]);
                 }
 
             }
@@ -85,7 +94,7 @@ public class Request {
 
         }
 
-
+        return true;
     }
 
     /**
@@ -93,9 +102,13 @@ public class Request {
      * @param str
      * @param req
      */
-    private static void parsingMethodAndProtocol(String str, Request req)
+    private static boolean parsingMethodAndProtocol(String str, Request req)
     {
         String[] method = str.split(" ");
+        if (method.length < 3)
+        {
+            return false;
+        }
         switch (method[0])
         {
             case "GET":
@@ -129,6 +142,7 @@ public class Request {
         }
 
         req.Version = portocol[1];
+        return true;
     }
 
     /**
