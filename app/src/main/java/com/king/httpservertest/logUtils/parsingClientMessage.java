@@ -1,6 +1,7 @@
 package com.king.httpservertest.logUtils;
 
 import com.king.httpservertest.LogUtils;
+import com.king.httpservertest.logUtils.Http.HttpClient;
 import com.king.httpservertest.logUtils.Http.Request;
 import com.king.httpservertest.logUtils.Http.Response;
 
@@ -26,26 +27,12 @@ public class parsingClientMessage implements Runnable {
         return Message;
     }
 
-
-
-
-
     @Override
     public void run() {
-        String Address = getClientAddress();
-        LogUtils.logi("Recevied Client Address : " + Address);
-        ByteArrayOutputStream Mess = getReciveData();
-        Response response = new Response();
-        if (Mess == null)
-        {
-            response.setReturnContent("Hellow Word".getBytes());
-            SendMessage(response);
-            return;
-        }
-        Request req = Request.Parsing(Mess,Socket Client);
-        response.setReturnContent(req.toString().getBytes());
-        SendMessage(response);
-
+        Request httpClient = new Request(client);
+        String Message = "<h1> king<h1>";
+        Response res = new Response().setReturnContent(httpClient.Content);
+        httpClient.SendMessage(res);
     }
 
 

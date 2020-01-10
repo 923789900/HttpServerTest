@@ -47,7 +47,7 @@ public class Response {
         return this;
     }
 
-    public Response setReturnContent(byte[] returnContent) {
+    public Response setReturnContent(byte[] returnContent)  {
         ReturnContent = returnContent;
         return this;
     }
@@ -107,7 +107,7 @@ public class Response {
      *
      * @return
      */
-    public ByteArrayOutputStream Build() {
+    public ByteArrayOutputStream Build()  {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         //HTTP/1.1 200
         byte[] ResponseTop = String.format("%s/%s %s %s\r\n", protocol.toString(), Version.getValue(), Code.getValue(), Code.toString().replace("_", " ")).getBytes();
@@ -126,6 +126,10 @@ public class Response {
         out.write(Split, 0, Split.length);
 
         //Content
+        if (ReturnContent == null)
+        {
+            ReturnContent = new byte[0];
+        }
         out.write(ReturnContent, 0, ReturnContent.length);
 
         return out;

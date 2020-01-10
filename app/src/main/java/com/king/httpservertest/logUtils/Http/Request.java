@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 
-public class Request {
+public class Request extends HttpClient {
 
     public String Path;
 
@@ -18,14 +18,22 @@ public class Request {
 
     public HashMap<String, String> Headers = new HashMap<>();
 
+    public Request(){
+        super();
+    }
+
+    public Request(Socket Client)
+    {
+        super(Client);
+        Parsing();
+    }
+
     /**
      * 解析request object
-     * @param outputStream
      * @return
      */
-    public static Request Parsing(ByteArrayOutputStream outputStream, Socket Client) {
-
-        Request req = new Request();
+    private void Parsing() {
+        ByteArrayOutputStream outputStream = super.getReciveData();
         int Size = outputStream.size();
         byte[] buf = outputStream.toByteArray();
         int index = getIndex(buf, "\r\n\r\n".getBytes());
@@ -37,7 +45,14 @@ public class Request {
             int Length = ++index;
             out.write(buf,0,Length);
             String HeaderStr = out.toString();
-            baseParsing(HeaderStr,req);
+            boolean state =baseParsing(HeaderStr);
+            if (!state)
+            {
+                Response res = new Response();
+                res.setCode(ResponseCode.Bad_Request);
+                res.setReturnContent("Bad_Request".getBytes());
+                super.SendMessage(res);
+            }
 
             //data
             if(Size > Length)
@@ -45,7 +60,7 @@ public class Request {
                 out.reset();
                 Length += "\r\n".length();
                 out.write(buf,Length,buf.length-Length);
-                req.Content =out.toByteArray();
+                Content =out.toByteArray();
             }
 
         }else
@@ -53,22 +68,23 @@ public class Request {
             //GET
             //header data
             String HeaderStr = outputStream.toString();
-            boolean state = baseParsing(HeaderStr,req);
+            boolean state = baseParsing(HeaderStr);
             if (!state)
             {
-
+                Response res = new Response();
+                res.setCode(ResponseCode.Bad_Request);
+                res.setReturnContent("Bad_Request".getBytes());
+                super.SendMessage(res);
             }
         }
 
-        return req;
     }
 
     /**
      * 解析request object
      * @param HeaderStr
-     * @param req
      */
-    private static boolean baseParsing(String HeaderStr, Request req)
+    private boolean baseParsing(String HeaderStr)
     {
         String[] heads =  HeaderStr.split("\r\n");
 
@@ -76,7 +92,7 @@ public class Request {
         {
             if (i == 0)
             {
-               boolean State = parsingMethodAndProtocol(heads[0],req);
+               boolean State = parsingMethodAndProtocol(heads[0]);
                if (!State)
                {
                    return false;
@@ -86,7 +102,7 @@ public class Request {
                 String[] singleHead = heads[i].split(":",2);
                 if (singleHead.length == 2 )
                 {
-                    req.Headers.put(singleHead[0],singleHead[1]);
+                    Headers.put(singleHead[0],singleHead[1]);
                 }
 
             }
@@ -100,9 +116,8 @@ public class Request {
     /**
      * 解析request 方法和协议类型
      * @param str
-     * @param req
      */
-    private static boolean parsingMethodAndProtocol(String str, Request req)
+    private boolean parsingMethodAndProtocol(String str)
     {
         String[] method = str.split(" ");
         if (method.length < 3)
@@ -112,36 +127,44 @@ public class Request {
         switch (method[0])
         {
             case "GET":
-                req.Method = RequestMethod.GET;
+                Method = RequestMethod.GET;
                 break;
             case "POST":
-                req.Method = RequestMethod.POST;
+                Method = RequestMethod.POST;
                 break;
             case "PUT":
-                req.Method = RequestMethod.PUT;
+                Method = RequestMethod.PUT;
                 break;
             default:
-                req.Method = RequestMethod.GET;
+                Method = RequestMethod.GET;
                 break;
         }
 
-        req.Path = method[1];
+        Path = method[1];
+        if (Path.contains("?")) {
+            String[] Param = Path.split("\\?");
+            Content = Param[1].getBytes();
+        }else
+        {
+            Content = new byte[0];
+        }
+
 
         String[] portocol = method[2].split("/");
         switch (portocol[0])
         {
             case "HTTP":
-                req.ProtocolType = Protocol.HTTP;
+                ProtocolType = Protocol.HTTP;
                 break;
             case "HTTPS":
-                req.ProtocolType = Protocol.HTTPS;
+                ProtocolType = Protocol.HTTPS;
                 break;
             default:
-                req.ProtocolType = Protocol.HTTP;
+                ProtocolType = Protocol.HTTP;
                 break;
         }
 
-        req.Version = portocol[1];
+        Version = portocol[1];
         return true;
     }
 
