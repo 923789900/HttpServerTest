@@ -18,7 +18,11 @@ public class Request extends HttpClient {
 
     public HashMap<String, String> Headers = new HashMap<>();
 
-    public Request(){
+    private byte[] Buffer;
+
+    private int BufferLength;
+
+    private Request(){
         super();
     }
 
@@ -28,14 +32,32 @@ public class Request extends HttpClient {
         Parsing();
     }
 
+    public Request(Socket Client,byte[] Buffer,int Length)
+    {
+        super(Client);
+        this.Buffer = Buffer;
+        this.BufferLength = Length;
+    }
+
     /**
      * 解析request object
      * @return
      */
     private void Parsing() {
-        ByteArrayOutputStream outputStream = super.getReciveData();
-        int Size = outputStream.size();
-        byte[] buf = outputStream.toByteArray();
+
+        int Size = 0;
+        byte[] buf = null;
+        if (Buffer != null && BufferLength >0)
+        {
+            ByteArrayOutputStream outputStream = super.getReciveData();
+            Size = outputStream.size();
+            buf = outputStream.toByteArray();
+        }else
+        {
+            Size = this.BufferLength;
+            buf = this.Buffer;
+        }
+
         int index = getIndex(buf, "\r\n\r\n".getBytes());
         if (index != -1)
         {
@@ -67,7 +89,7 @@ public class Request extends HttpClient {
         {
             //GET
             //header data
-            String HeaderStr = outputStream.toString();
+            String HeaderStr = new String(buf);
             boolean state = baseParsing(HeaderStr);
             if (!state)
             {

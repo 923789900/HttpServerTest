@@ -1,5 +1,7 @@
 package com.king.httpservertest;
 
+import com.king.httpservertest.logUtils.Http.Request;
+import com.king.httpservertest.logUtils.Http.Response;
 import com.king.httpservertest.logUtils.SocketUtils.SocketListener;
 
 import java.net.Socket;
@@ -12,12 +14,26 @@ public class ListenerRequest implements SocketListener {
 
     @Override
     public void event_Recevied(Socket client, byte[] Data, int Length) {
-        LogUtils.logi("Client Recevied Data Length : "+Length +", Data : "+Data.toString());
+        try
+        {
+            Request req = new Request(client,Data,Length);
+            Response res = new Response().setReturnContent(req.Content);
+            req.SendMessage(res);
+        }catch (Exception e)
+        {
+            LogUtils.logi("ListenerRequest->event_Recevied|Exception|ErrorMessage : "+e.getMessage());
+        }
+
     }
 
     @Override
     public void event_disConnection(Socket client) {
 
     }
+
+
+
+
+
 
 }
