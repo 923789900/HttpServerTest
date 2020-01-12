@@ -10,7 +10,7 @@ import java.net.Socket;
 public class ListenerRequest implements SocketListener {
     @Override
     public void event_Connection(ClientSocket client) {
-            LogUtils.logi("Client Connection : "+client.getInetAddress().getHostAddress());
+            LogUtils.logi("Client Connection : "+client.getAddress());
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.king.httpservertest.logUtils.SocketUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -45,6 +46,7 @@ public class ClientSocket {
         Client.close();
     }
 
-
-
+    public String getAddress() {
+        return Client.getInetAddress().getHostAddress();
+    }
 }
