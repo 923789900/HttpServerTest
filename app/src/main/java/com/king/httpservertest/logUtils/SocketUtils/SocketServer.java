@@ -118,12 +118,12 @@ public class SocketServer {
 
                 //用户连接事件
                 if (!Client.isConnected()) {
-                    listener.event_Connection(Client);
+                    listener.event_Connection((ClientSocket) Client);
                 }
 
                 //用户收到数据
                 ByteArrayOutputStream data =  getReciveData(Client);
-                listener.event_Recevied(Client,data.toByteArray(),data.size());
+                listener.event_Recevied((ClientSocket) Client,data.toByteArray(),data.size());
 
             }
         }).start();
