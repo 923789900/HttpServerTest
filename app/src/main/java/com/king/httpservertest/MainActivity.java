@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.king.httpservertest.logUtils.Http.Core.HttpServer;
 import com.king.httpservertest.logUtils.SocketUtils.SocketServer;
 
 import java.io.IOException;
@@ -27,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 ListenerRequest lis = new ListenerRequest();
 
-                SocketServer server = null;
+                HttpServer server = null;
                 try {
-                    server = new SocketServer(lis);
+                    server = new HttpServer(lis);
                     server.Start(50131);
                     LogUtils.logi("Start Server Success");
                 } catch (IOException e) {

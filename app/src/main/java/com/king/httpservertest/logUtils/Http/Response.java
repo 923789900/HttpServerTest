@@ -32,6 +32,8 @@ public class Response {
      */
     private HashMap<String, String> ReturnCookis = null;
 
+    private byte[] Split = {13,10};
+
     public Response() {
         protocol = Protocol.HTTP;
         ReturnContent = new byte[0];
@@ -39,6 +41,7 @@ public class Response {
         Code = ResponseCode.OK;
         headers = new HashMap<>();
         headers.put("Server", "King v1.0");
+        headers.put("Content-Type","application/json;charset=UTF-8");
         ReturnCookis = new HashMap<>();
     }
 
@@ -78,10 +81,15 @@ public class Response {
      */
     private byte[] HeadersToByteArray() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        if (ReturnContent != null)
+        {
+            headers.put("Content-Length",String.valueOf(ReturnContent.length));
+        }
         for (String key : headers.keySet()) {
             String value = headers.get(key);
-            byte[] singleHead = String.format("%s: %s\r\n",key,value).getBytes();
+            byte[] singleHead = String.format("%s: %s",key,value).getBytes();
             out.write(singleHead,0,singleHead.length);
+            out.write(Split, 0, Split.length);
         }
         return out.toByteArray();
     }
@@ -95,8 +103,9 @@ public class Response {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         for (String key : ReturnCookis.keySet()) {
             String value = headers.get(key);
-            byte[] singleHead = String.format("Set-Cookie: %s=%s\r\n",key,value).getBytes();
+            byte[] singleHead = String.format("Set-Cookie: %s=%s",key,value).getBytes();
             out.write(singleHead,0,singleHead.length);
+            out.write(Split, 0, Split.length);
         }
         return out.toByteArray();
 
@@ -108,10 +117,12 @@ public class Response {
      * @return
      */
     public ByteArrayOutputStream Build()  {
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         //HTTP/1.1 200
-        byte[] ResponseTop = String.format("%s/%s %s %s\r\n", protocol.toString(), Version.getValue(), Code.getValue(), Code.toString().replace("_", " ")).getBytes();
+        byte[] ResponseTop = String.format("%s/%s %s %s", protocol.toString(), Version.getValue(), Code.getValue(), Code.toString().replace("_", " ")).getBytes();
         out.write(ResponseTop, 0, ResponseTop.length);
+        out.write(Split, 0, Split.length);
 
         //HttpHeaders
         byte[] headers = HeadersToByteArray();
@@ -122,15 +133,17 @@ public class Response {
         out.write(Cookies, 0, Cookies.length);
 
         //Split Content
-        byte[] Split = "\r\n\r\n".getBytes();
         out.write(Split, 0, Split.length);
 
         //Content
         if (ReturnContent == null)
         {
             ReturnContent = new byte[0];
+        }else
+        {
+            out.write(ReturnContent, 0, ReturnContent.length);
         }
-        out.write(ReturnContent, 0, ReturnContent.length);
+
 
         return out;
     }
