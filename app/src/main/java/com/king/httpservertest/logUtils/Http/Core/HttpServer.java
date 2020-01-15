@@ -5,7 +5,6 @@ import com.king.httpservertest.LogUtils;
 import com.king.httpservertest.logUtils.Http.Interface.HttpListener;
 import com.king.httpservertest.logUtils.Http.Request;
 import com.king.httpservertest.logUtils.SocketUtils.ClientSocket;
-import com.king.httpservertest.logUtils.SocketUtils.SocketListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
