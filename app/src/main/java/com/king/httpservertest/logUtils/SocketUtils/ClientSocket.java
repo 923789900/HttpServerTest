@@ -15,7 +15,6 @@ public class ClientSocket {
         Client = new Socket();
     }
 
-
     public ClientSocket(Socket client)
     {
         Client = client;
@@ -48,5 +47,10 @@ public class ClientSocket {
 
     public String getAddress() {
         return Client.getInetAddress().getHostAddress();
+    }
+
+    public int getPort()
+    {
+        return Client.getPort();
     }
 }
